@@ -1,4 +1,4 @@
-### **1. Dexter: Data Pipeline & Augmentation Lead**
+### **1. Tyler: Data Pipeline & Augmentation Lead**
 
 - **Focus**: Data loading, class mapping, and preprocessing.
 - **Key Responsibilities**:
@@ -18,7 +18,7 @@
 
 ---
 
-### **3. Lance: Training Loop & Optimization Lead**
+### **3. Dexter: Training Loop & Optimization Lead**
 
 - **Focus**: Training, hyperparameter tuning, and logging.
 - **Key Responsibilities**:
@@ -28,7 +28,7 @@
 
 ---
 
-### **4. Tyler: Integration, Testing & Submission Lead**
+### **4. Lance: Integration, Testing & Submission Lead**
 
 - **Focus**: Interface validation, file packaging, and live evaluation prep.
 - **Key Responsibilities**:
