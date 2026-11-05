@@ -1,10 +1,11 @@
-### **1. Tyler: Data Pipeline & Augmentation Lead**
+### **1. Tyler: Data Pipeline & Augmentation Lead, Submission Lead**
 
 - **Focus**: Data loading, class mapping, and preprocessing.
 - **Key Responsibilities**:
   - Load and inspect the **Imagewoof dataset** and confirm class order against `classes.txt`.
   - Implement data augmentation pipelines (e.g., random flips, rotations, color jitter, normalization) specifically suited for fine-grained dog breed features like coat texture and ear shape.
   - Format inputs properly into `(N, 128, 128, 3)` arrays for validation testing.
+  - Coordinate final packaging and submission of the group files.
 
 ---
 
@@ -28,10 +29,10 @@
 
 ---
 
-### **4. Lance: Integration, Testing & Submission Lead**
+### **4. Lance: Integration & Testing**
 
 - **Focus**: Interface validation, file packaging, and live evaluation prep.
 - **Key Responsibilities**:
   - Implement and strictly test the required **`load_model`** and **`predict`** interface functions.
   - Verify that `load_model` loads `model.pth` seamlessly across both **CPU and GPU** environments.
-  - Package the final `GroupX_Assignment.zip`, test that `predict` reproduces validation accuracy, and lead the preparation for the Q&A.
+  - Test that `predict` reproduces validation accuracy, coordinate the submission checks with Tyler, and lead the preparation for the Q&A.
