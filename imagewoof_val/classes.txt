@@ -1,0 +1,10 @@
+0 shih_tzu
+1 rhodesian_ridgeback
+2 beagle
+3 english_foxhound
+4 border_terrier
+5 australian_terrier
+6 golden_retriever
+7 old_english_sheepdog
+8 samoyed
+9 dingo
