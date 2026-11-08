@@ -1,7 +1,5 @@
-# Validated with Python 3.14.3, torch 2.15.0+cu132, and torchvision 0.29.2+cu132.
-# Install torch and torchvision separately using the official PyTorch selector:
-# https://pytorch.org/get-started/locally/
-# For the same Windows/NVIDIA setup, choose CUDA 13.2 and matching stable versions.
+# Install torch and torchvision separately for your CPU/CUDA platform (see README.md).
+# These versions were verified locally with Python 3.10 and torch 2.10 / torchvision 0.25.
 
-numpy==2.5.4
-Pillow==13.0.0
+numpy==1.26.3
+Pillow==12.0.0

@@ -15,7 +15,7 @@
 - **Key Responsibilities**:
   - Construct the custom CNN PyTorch/Keras class from scratch.
   - Start with a baseline architecture (e.g., 4–6 conv layers, stacking \\(3 \times 3\\) convolutions before pooling).
-  - Iterate on model depth, spatial dimensions, channel counts, batch normalization, and residual/skip connections to boost feature extraction.
+  - Iterate on model depth, spatial dimensions, channel counts, and batch normalization to boost feature extraction. Residual/skip connections are prohibited by the assignment.
 
 ---
 
