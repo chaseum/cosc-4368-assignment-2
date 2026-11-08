@@ -5,7 +5,7 @@ import numpy as np
 import csv
 
 from data_pipeline import create_data_pipeline
-from temp_model import create_temp_model
+from model import CustomDogClassifier, load_model
 
 
 def train_one_epoch(model, train_loader, criterion, optimizer, device):
@@ -60,7 +60,7 @@ def train_one_epoch(model, train_loader, criterion, optimizer, device):
 def train(model, train_loader, val_loader, criterion,
           optimizer, scheduler, device, epochs=5, checkpoint_path="temporary_model.pth"):
 
-    best_val_accuracy = 0.0
+    best_val_accuracy =  0.0
     history = []
 
     for epoch in range(epochs):
@@ -69,8 +69,10 @@ def train(model, train_loader, val_loader, criterion,
             model, train_loader, criterion, optimizer, device
         )
 
+        val_criterion = nn.CrossEntropyLoss()
+
         val_loss, val_accuracy = validate(
-            model, val_loader, criterion, device
+            model, val_loader, val_criterion, device
         )
 
         history.append({
@@ -92,7 +94,11 @@ def train(model, train_loader, val_loader, criterion,
         # Save model if validation accuracy improved
         if val_accuracy > best_val_accuracy:
             best_val_accuracy = val_accuracy
-            torch.save(model.state_dict(), checkpoint_path)
+            torch.save({
+                "architecture": "deep",
+                "dropout": 0.3,
+                "state_dict": model.state_dict()
+            }, checkpoint_path)
             print("New best model saved!")
 
         scheduler.step()
@@ -157,10 +163,10 @@ def set_seed(seed):
 
 def main():
     set_seed(42)
-    learning_rate = 0.001
+    learning_rate = 0.00001
     weight_decay = 0.01
     epochs = 5
-    experiment_name = "temp_adamw_lr001_step3_seed42"
+    experiment_name = "chase_finetune_lr00001_5epochs_Wcrop"
 
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
@@ -173,8 +179,25 @@ def main():
         batch_size=16
     )
 
+    # Evaluate Chase's existing checkpoint
+    chase_model = load_model("model.pth").to(device)
+
+    val_criterion = nn.CrossEntropyLoss()
+
+    chase_loss, chase_accuracy = validate(
+        chase_model,
+        val_loader,
+        val_criterion,
+        device
+    )
+
+    print(f"Chase Validation Loss: {chase_loss:.4f}")
+    print(f"Chase Validation Accuracy: {chase_accuracy:.2%}")
+
+    #return
+
     # create temporary CNN
-    model = create_temp_model()
+    model = load_model("model.pth")
 
     # CNN to GPU
     model = model.to(device)
@@ -191,7 +214,7 @@ def main():
 
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer,
-        step_size=3,
+        step_size=5,
         gamma=0.5
     )
 
@@ -206,6 +229,15 @@ def main():
         device,
         epochs=epochs,
         checkpoint_path=f"{experiment_name}.pth"
+    )
+
+    best_finetune_accuracy = max(
+    epoch["val_accuracy"] for epoch in history
+    )
+
+    print(
+        f"Change from Chase's baseline: "
+        f"{(best_finetune_accuracy - chase_accuracy) * 100:+.2f} percentage points"
     )
 
     with open(f"{experiment_name}.csv", "w", newline="") as file:
