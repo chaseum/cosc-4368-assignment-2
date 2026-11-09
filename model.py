@@ -1,10 +1,26 @@
 import numpy as np
 import torch
 from torch import nn
+from torch.nn import functional as F
 
-ARCHITECTURES = ("baseline", "deep", "deep_spatial", "deep_pointwise", "deep_2233", "wide_2233", "wide_22333")
+ARCHITECTURES = ("baseline", "deep", "deep_spatial", "deep_pointwise", "deep_2233", "wide_2233", "wide_22333",
+                 "deep_mish", "deep_blur", "deep_blur_mish")
 CHANNELS = {"baseline": (32, 64, 128), "wide_2233": (64, 128, 256, 512), "wide_22333": (64, 128, 256, 512, 512)}
 CONVOLUTIONS = {"deep_2233": (2, 2, 3, 3), "wide_2233": (2, 2, 3, 3), "wide_22333": (2, 2, 3, 3, 3)}
+
+
+class MaxBlurPool(nn.Module):
+    """Max pooling that blurs with a fixed, untrained kernel before downsampling by 2."""
+
+    def __init__(self):
+        super().__init__()
+        self.maxpool = nn.MaxPool2d(2, stride=1)
+        binomial = torch.tensor([1.0, 2.0, 1.0])
+        self.register_buffer("kernel", (binomial[None] * binomial[:, None])[None, None] / 16, persistent=False)
+
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        images = F.pad(self.maxpool(images), (1, 1, 1, 1), mode="reflect")
+        return F.conv2d(images, self.kernel.expand(images.shape[1], -1, -1, -1), stride=2, groups=images.shape[1])
 
 
 class CustomDogClassifier(nn.Module):
@@ -31,10 +47,10 @@ class CustomDogClassifier(nn.Module):
                 layers.extend([
                     nn.Conv2d(in_channels, out_channels, 3, padding=1, bias=False),
                     nn.BatchNorm2d(out_channels),
-                    nn.ReLU(inplace=True),
+                    nn.Mish(inplace=True) if "mish" in architecture else nn.ReLU(inplace=True),
                 ])
                 in_channels = out_channels
-            layers.append(nn.MaxPool2d(2))
+            layers.append(MaxBlurPool() if "blur" in architecture else nn.MaxPool2d(2))
         if architecture == "deep_pointwise":
             layers.extend([
                 nn.Conv2d(256, 256, 1, bias=False),

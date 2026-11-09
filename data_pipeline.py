@@ -5,7 +5,7 @@ from torch.utils.data import ConcatDataset, DataLoader
 import numpy as np
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-AUGMENTATIONS = ("original", "crop", "crop_erase", "strong")
+AUGMENTATIONS = ("original", "crop", "crop_erase", "strong", "randaug")
 TRAIN_MEAN_RGB = (128, 118, 102)  # Rotation corners blend in instead of turning black.
 
 def read_class_names(classes_file: Path) -> list[str]:
@@ -54,6 +54,11 @@ def create_train_transform(augmentation: str = "original", normalization=None):
         if normalization is not None:
             operations.append(transforms.Normalize(normalization["mean"], normalization["std"]))
         operations.append(transforms.RandomErasing(p=0.25, value="random"))
+        return transforms.Compose(operations)
+    if augmentation == "randaug":
+        operations = [transforms.RandomHorizontalFlip(p=0.5), transforms.RandAugment(2, 7), transforms.ToTensor()]
+        if normalization is not None:
+            operations.append(transforms.Normalize(normalization["mean"], normalization["std"]))
         return transforms.Compose(operations)
     operations = []
     if augmentation != "original":

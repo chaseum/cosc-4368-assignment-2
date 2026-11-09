@@ -10,9 +10,25 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from model import CustomDogClassifier
 from train import class_metrics, main, run_epoch, train_model
+from train_recipe import mix_batch
 
 
 class TrainingTests(unittest.TestCase):
+    def test_mix_batch_labels_match_the_pixels_kept(self):
+        images = torch.arange(4.0).view(4, 1, 1, 1).expand(-1, 3, 64, 64).clone()
+        labels = torch.arange(4)
+        for cutmix, mixup in ((1.0, 0.0), (0.0, 1.0)):
+            for _ in range(20):
+                mixed, first, second, weight = mix_batch(images.clone(), labels, cutmix, mixup)
+                expected = weight * first.float() + (1 - weight) * second.float()
+                torch.testing.assert_close(mixed.mean(dim=(1, 2, 3)), expected, atol=1e-5, rtol=0)
+
+    def test_new_architectures_keep_output_shape(self):
+        for architecture in ("deep_mish", "deep_blur", "deep_blur_mish"):
+            model = CustomDogClassifier(architecture).eval()
+            self.assertEqual(model(torch.zeros(2, 3, 128, 128)).shape, (2, 10))
+            self.assertFalse(any("kernel" in key for key in model.state_dict()))
+
     def test_smoothing_applies_only_to_training_loss(self):
         def finish_epoch(model, loader, device, criterion, optimizer=None, scaler=None):
             if optimizer is not None:
