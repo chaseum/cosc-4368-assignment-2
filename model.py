@@ -30,13 +30,14 @@ class CustomDogClassifier(nn.Module):
 
 
 def load_model(path="model.pth"):
-    """Load a training checkpoint on CPU and return the matching model in eval mode."""
+    """Load a training checkpoint on the available device and return eval model."""
     checkpoint = torch.load(path, map_location="cpu", weights_only=True)
     if checkpoint["architecture"] != "deep":
         raise ValueError("This model file loads only the selected deep CNN checkpoint")
     model = CustomDogClassifier(checkpoint.get("dropout", 0.3))
     model.load_state_dict(checkpoint["state_dict"])
-    return model.eval()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return model.to(device).eval()
 
 
 @torch.inference_mode()
@@ -52,5 +53,7 @@ def predict(model, images):
     for start in range(0, len(images), 32):
         batch = torch.from_numpy(np.ascontiguousarray(images[start:start + 32]))
         batch = batch.permute(0, 3, 1, 2).to(device=device, dtype=torch.float32) / 255.0
-        predictions.append(model(batch).argmax(dim=1).cpu().numpy())
+        original_logits = model(batch)
+        flipped_logits = model(torch.flip(batch, dims=[3]))
+        predictions.append((original_logits + flipped_logits).argmax(dim=1).cpu().numpy())
     return np.concatenate(predictions) if predictions else np.empty(0, dtype=np.int64)
